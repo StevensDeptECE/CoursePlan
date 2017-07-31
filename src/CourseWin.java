@@ -79,6 +79,10 @@ public void draw() {
 }
 
 public void mousePressed() {
+	
+	//double lat = ....
+	//double lon = ....
+	// main.coordinates.add(lat, lon);
   waypoints.add(new Point(mouseX, mouseY));
 
   if (waypoints.size() > 1) {
@@ -87,6 +91,7 @@ public void mousePressed() {
 
     distances.add(prev.getDist(curr));
     distanceSum += distances.get(waypoints.size() - 2);
+    
   }
   
 }
