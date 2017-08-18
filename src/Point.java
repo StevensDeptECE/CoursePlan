@@ -30,8 +30,8 @@ public class Point {
 		latDegree = getDegreeValue(lat);
 		lonDegree = getDegreeValue(lon);
 		
-		latStr = getLatString(lat);
-		lonStr = getLonString(lon);
+		latStr = getLatString();
+		lonStr = getLonString();
 		
 	}
 	
@@ -54,10 +54,10 @@ public class Point {
 	}
 	
 	public double getDegreeValue(double l) {
-		return Math.abs(l / Math.PI * 180);
+		return l / Math.PI * 180;
 	}
 	
-	public String getLatString(double lat) {				
+	public String getLatString() {				
 //		String latStr = "";
 //		
 //		int latInt = (int) (latDegree * 100) / 100;
@@ -66,18 +66,20 @@ public class Point {
 //		latStr += latInt + "°";
 //		latStr += latDec + "′";
 		
-		String latStr = "" + (int) latDegree + "°";
+		int l = (int) latDegree;
 		
-		if (lat > 0) {
+		String latStr = "" + Math.abs(l) + "°";
+		
+		if (l > 0) {
 			latStr += "N";
-		} else if (lat < 0) {
+		} else if (l < 0) {
 			latStr += "S";
 		}
 		
 		return latStr;
 	}
 	
-	public String getLonString(double lon) {		
+	public String getLonString() {		
 //		String lonStr = "";
 //		
 //		int latInt = (int) (lonDegree * 100) / 100;
@@ -86,11 +88,13 @@ public class Point {
 //		lonStr += latInt + "°";
 //		lonStr += latDec + "′";
 		
-		String lonStr = "" + (int) lonDegree + "°";
+		int l = (int) lonDegree;
 		
-		if (lon > 0) {
+		String lonStr = "" + Math.abs(l) + "°";
+		
+		if (l > 0) {
 			lonStr += "E";
-		} else if (lon < 0) {
+		} else if (l < 0) {
 			lonStr += "W";
 		}
 		
