@@ -8,6 +8,9 @@ public class Point {
 	double lat;
 	double lon;
 	
+	double latDegree;
+	double lonDegree;
+	
 	String latStr;
 	String lonStr;
   
@@ -23,6 +26,9 @@ public class Point {
 		// Mercator projection - Gudermannian function	
 		lat = Math.atan(Math.sinh(absoluteY / mapR));
 		lon = 0 + absoluteX / mapR;
+		
+		latDegree = getDegreeValue(lat);
+		lonDegree = getDegreeValue(lon);
 		
 		latStr = getLatString(lat);
 		lonStr = getLonString(lon);
@@ -47,9 +53,11 @@ public class Point {
 		return false;
 	}
 	
-	public String getLatString(double lat) {
-		double latDegree = Math.abs(lat / Math.PI * 180);
-				
+	public double getDegreeValue(double l) {
+		return Math.abs(l / Math.PI * 180);
+	}
+	
+	public String getLatString(double lat) {				
 //		String latStr = "";
 //		
 //		int latInt = (int) (latDegree * 100) / 100;
@@ -69,9 +77,7 @@ public class Point {
 		return latStr;
 	}
 	
-	public String getLonString(double lon) {
-		double lonDegree = Math.abs(lon / Math.PI * 180);
-		
+	public String getLonString(double lon) {		
 //		String lonStr = "";
 //		
 //		int latInt = (int) (lonDegree * 100) / 100;

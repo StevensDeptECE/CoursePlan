@@ -14,6 +14,8 @@ public class MainWin extends JFrame {
 	JButton startButton, quitButton;
 	JButton addButton, deleteButton, resetButton;
 	
+	LatLonTable table = CourseWin.table;
+	
 	public MainWin() {
 		super("Course Planner");
 		
@@ -65,7 +67,11 @@ public class MainWin extends JFrame {
 		
 		// panel2 - table
 		JPanel panel2 = new JPanel();
-		panel2.setBackground(Color.blue);
+		
+		JTable jtable = new JTable(table);
+		panel2.add(jtable);
+//		panel2.setBackground(Color.blue);
+		
 		addComp(thePanel, panel2, 0, 1, 1, 3, this.getWidth(), this.getHeight() / 10 * 8, GridBagConstraints.CENTER, GridBagConstraints.BOTH);
 
 		// panel3 - start & quit

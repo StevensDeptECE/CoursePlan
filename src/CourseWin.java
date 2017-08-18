@@ -2,6 +2,8 @@ import processing.core.*;
 import java.util.ArrayList;
 
 public class CourseWin extends PApplet {
+  public static LatLonTable table;
+  
   PImage img;
     
   float ratio;
@@ -22,6 +24,8 @@ public class CourseWin extends PApplet {
         
     surface.setSize(winW, winH);
     surface.setLocation(screenWidth - winW, 0);
+    
+    table = new LatLonTable();
     
   }
   
@@ -104,7 +108,9 @@ public class CourseWin extends PApplet {
     
     if (!isExist) {
       if (mouseX >= 0 && mouseX <= mapW && mouseY >= 0 && mouseY <= mapH) {
-        waypoints.add(new Point(mouseX, mouseY, mapW, mapH));       
+        
+        waypoints.add(new Point(mouseX, mouseY, mapW, mapH));
+        table.add(new Point(mouseX, mouseY, mapW, mapH));
       }
     }
     
@@ -124,6 +130,7 @@ public class CourseWin extends PApplet {
   public void settings() { size(displayWidth, displayHeight); }
 
   static public void main(String[] passedArgs) {
+//    new MainWin(CourseWin.table);
     new MainWin();
   }
 
