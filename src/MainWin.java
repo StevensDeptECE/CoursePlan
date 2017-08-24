@@ -1,6 +1,4 @@
 import java.io.*;
-import java.util.ArrayList;
-
 import javax.imageio.ImageIO;
 
 import java.awt.*;
@@ -8,9 +6,6 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
-import javax.swing.table.DefaultTableModel;
 
 import processing.core.PApplet;
 
@@ -22,7 +17,7 @@ public class MainWin extends JFrame {
 	
 	JTextField textLat, textLon;
 	
-	JButton startButton, quitButton, updateButton, addButton, deleteButton, resetButton;
+	JButton startButton, quitButton, saveButton, updateButton, addButton, deleteButton, resetButton;
 	
 	boolean isStart = false;
 			
@@ -54,16 +49,19 @@ public class MainWin extends JFrame {
 		
 		// panel1 - comp2 - button1Panel - start & quit
 		JPanel button1Panel = new JPanel();
-		button1Panel.setLayout(new GridLayout(1, 2));
+		button1Panel.setLayout(new GridLayout(1, 3));
 		
 		startButton = new JButton("Start");		
 		quitButton = new JButton("Quit");
+		saveButton = new JButton("Save");
 		
 		startButton.addActionListener(lb);
 		quitButton.addActionListener(lb);
+		saveButton.addActionListener(lb);
 		
 		button1Panel.add(startButton);
 		button1Panel.add(quitButton);
+		button1Panel.add(saveButton);
 		
 		// panel1 - add
 		panel1.add(welcomeLabel);
@@ -73,6 +71,8 @@ public class MainWin extends JFrame {
 				
 		// panel2 - table
 		jtable = new JTable(table);
+		jtable.setToolTipText("Click and try to revise value here!");
+		
         JScrollPane panel2 = new JScrollPane(jtable);
         
 		addComp(thePanel, panel2, 0, 1, 1, 1, this.getWidth(), this.getHeight() / 3 * 2);
@@ -169,6 +169,10 @@ public class MainWin extends JFrame {
 				System.exit(0);
 			}
 			
+			if (e.getSource() == saveButton) {
+				//
+			}
+			
 			if (e.getSource() == updateButton) {
 				table.updateDistance();
 				distLabel.setText("Distance Sum: " + table.getDistanceSum() + " (km)");
@@ -179,7 +183,11 @@ public class MainWin extends JFrame {
 			}
 			
 			if (e.getSource() == deleteButton) {
+				int[] rows = jtable.getSelectedRows();
 				
+				for (int i = rows.length - 1; i >= 0; i--) {
+					table.remove(rows[i]);
+				}
 			}
 			
 			if (e.getSource() == resetButton) {
