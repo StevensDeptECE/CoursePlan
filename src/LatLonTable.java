@@ -1,9 +1,15 @@
-import java.text.DecimalFormat;
 import java.util.*;
+import java.io.*;
 
+import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import javax.swing.*;
 import javax.swing.table.*;
 
 public class LatLonTable extends AbstractTableModel{
+    JComponent parentPanel = null;
     
     private static String columnNames[] = {"Lat", "Lon"};
     
@@ -33,23 +39,31 @@ public class LatLonTable extends AbstractTableModel{
     
     public Object getValueAt(int row, int col) {
         if (col == 0) {
-            return points.get(row).getLatString(2);
+            return points.get(row).getLatString();
         } else {
-            return points.get(row).getLonString(2);
+            return points.get(row).getLonString();
         }
     }
     
     public void setValueAt(Object value, int row, int col) {
-        Point p = points.get(row);
-        
-        if (col == 0) { // lat
-            p.updateLat((String) value);
+        try {
+            int valInt = Integer.parseInt((String) value);
             
-        } else { // lon
-            p.updateLon((String) value);
+            Point p = points.get(row);
+            
+            if (col == 0) {
+                p.updateLat(valInt);
+            } else {
+                p.updateLon(valInt);
+            }
+            
+            fireTableCellUpdated(row, col);
+            
+        } catch(NumberFormatException e) {
+            JOptionPane.showMessageDialog(parentPanel, "Opps...\nPlease input an INTEGER!", "Retry", JOptionPane.WARNING_MESSAGE);
         }
         
-        fireTableCellUpdated(row, col);     
+                
     }
     
     public void add(Point p) {
@@ -76,6 +90,38 @@ public class LatLonTable extends AbstractTableModel{
     public String getDistanceSum() {
         DecimalFormat df = new DecimalFormat("#.####");
         return df.format(distanceSum);
+    }
+    
+    public String saveToFile(int printTimes) {
+        try {
+            String fileName = "LatLonInfo_" + DateTimeFormatter.ofPattern("MMddyyyy").format(LocalDate.now()) + "_" + printTimes + ".txt";
+            
+            BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
+            
+            // print file head
+            bw.write("The " + printTimes + "th Print:\n\n");            
+            bw.write("Positions:\tLat:\tLon:\t\n");
+            bw.write("------------------------------\n");
+            
+            // print table data
+            for (int i = 0; i < points.size(); i++) {
+                bw.write("Position " + (i + 1) + ":\t" + points.get(i).getLatString() + "\t" + points.get(i).getLonString() + "\n");
+            }
+            
+            // print file end
+            bw.write("------------------------------\n");           
+            bw.write(new Date() + "\n");
+                        
+            bw.flush();
+            bw.close();
+            
+            return fileName;
+            
+        } catch(IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    
     }
     
 }

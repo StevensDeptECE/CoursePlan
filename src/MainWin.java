@@ -11,140 +11,187 @@ import processing.core.PApplet;
 
 public class MainWin extends JFrame {	
 	LatLonTable table;
+	
 	JTable jtable;
+	
+	JPanel mainPanel;
+	
+	JButton startButton, quitButton, saveButton, updateButton, addButton, deleteButton, resetButton;
 	
 	JLabel distLabel;
 	
 	JTextField textLat, textLon;
 	
-	JButton startButton, quitButton, saveButton, updateButton, addButton, deleteButton, resetButton;
+	private boolean isStart = false;
+	private int printTimes = 0;
 	
-	boolean isStart = false;
-			
 	public MainWin(LatLonTable table) {
 		super("Course Planner");
 		
 		this.table = table;
 		
 		int[] size = calculateSize();
-		this.setSize(size[0], size[1]);
+		setSize(size[0], size[1]);
 		
-		this.setLocation(0, 0);
-		this.setResizable(true);
+		setLocation(0, 0);
+		setResizable(true);
 		
-		// thePanel
-		JPanel thePanel = new JPanel();
-		thePanel.setLayout(new GridBagLayout());
+		// mainPanel
+		mainPanel = new JPanel();
+		mainPanel.setLayout(new GridBagLayout());
 		
-		ListenForButton lb = new ListenForButton();
+		// ActionListener for buttons
+		ListenForButtons alForButtons = new ListenForButtons();
 		
-		// panel1 - welcome
-		JPanel panel1 = new JPanel();
-		panel1.setLayout(new GridLayout(2, 1));
+		// part_1: controlPanel
+		JPanel controlPanel = new JPanel();
+		controlPanel.setLayout(new GridLayout(2, 1));
 		
-		// panel1 - comp1 - welcome label
-		JLabel welcomeLabel = new JLabel("Welcome! Let's Navigation!");
-		welcomeLabel.setFont(welcomeLabel.getFont().deriveFont(22.0f));
-		welcomeLabel.setHorizontalAlignment(JLabel.CENTER);
+		// part_1_1: welcomeLabel
+		addLabel(controlPanel, "Welcome! Let's Navigation!", 21.0f, JLabel.CENTER);
 		
-		// panel1 - comp2 - button1Panel - start & quit
-		JPanel button1Panel = new JPanel();
-		button1Panel.setLayout(new GridLayout(1, 3));
+		// part_1_2: controlButtonsPanel - controlButtons (start, quit & save)
+		JPanel controlButtonsPanel = new JPanel();
+		controlButtonsPanel.setLayout(new GridLayout(1, 3));
+			
+		startButton = addButton(controlButtonsPanel, "Start", alForButtons);
+		quitButton = addButton(controlButtonsPanel, "Quit", alForButtons);
+		saveButton = addButton(controlButtonsPanel, "Save", alForButtons);
 		
-		startButton = new JButton("Start");		
-		quitButton = new JButton("Quit");
-		saveButton = new JButton("Save");
+		controlPanel.add(controlButtonsPanel);
 		
-		startButton.addActionListener(lb);
-		quitButton.addActionListener(lb);
-		saveButton.addActionListener(lb);
-		
-		button1Panel.add(startButton);
-		button1Panel.add(quitButton);
-		button1Panel.add(saveButton);
-		
-		// panel1 - add
-		panel1.add(welcomeLabel);
-		panel1.add(button1Panel);
-		
-		addComp(thePanel, panel1, 0, 0, 1, 1, this.getWidth(), this.getHeight() / 7);
+		addComp(controlPanel, 0, 0, 1, 1, this.getWidth(), this.getHeight() / 7);
 				
-		// panel2 - table
+		// part_2: tablePanel
 		jtable = new JTable(table);
-		jtable.setToolTipText("Click and try to revise value here!");
+		jtable.setToolTipText("Click and revise values here!");
 		
-        JScrollPane panel2 = new JScrollPane(jtable);
+        JScrollPane tablePanel = new JScrollPane(jtable);
         
-		addComp(thePanel, panel2, 0, 1, 1, 1, this.getWidth(), this.getHeight() / 3 * 2);
+        table.parentPanel = tablePanel;
+        
+		addComp(tablePanel, 0, 1, 1, 1, this.getWidth(), this.getHeight() / 3 * 2);
 
-		// panel3 - distanceSum
-		JPanel panel3 = new JPanel();
-		panel3.setToolTipText("Click \"update\" button to update!");
+		// part_3: distPanel
+		JPanel distPanel = new JPanel();
+		distPanel.setToolTipText("Click \"Update\" button to update!");
 		
-		distLabel = new JLabel("Distance Sum: " + table.getDistanceSum() + " (km)");
+		distLabel = addLabel(distPanel, "Distance Sum: " + table.getDistanceSum() + " (km)");
+		updateButton = addButton(distPanel, "Update", alForButtons);
 		
-		updateButton = new JButton("Update");
-		updateButton.addActionListener(lb);
-		
-		panel3.add(distLabel);
-		panel3.add(updateButton);
-		
-		addComp(thePanel, panel3, 0, 2, 1, 1, this.getWidth(), this.getHeight() / 9);
+		addComp(distPanel, 0, 2, 1, 1, this.getWidth(), this.getHeight() / 9);
 	
-		// panel4 - input part
-		JPanel panel4 = new JPanel();
-		panel4.setLayout(new GridLayout(3, 1));
+		// part_4: operatePanel
+		JPanel operatePanel = new JPanel();
+		operatePanel.setLayout(new GridLayout(3, 1));
 		
-		// panel4 - comp1 - input area
+		// part_4_1: inputPanel
 		JPanel inputPanel = new JPanel();
 		
-		JLabel inputLabel = new JLabel("Input Pos: ");
-		inputLabel.setFont(inputLabel.getFont().deriveFont(14.0f));
-		inputLabel.setHorizontalAlignment(JLabel.LEFT);
+		addLabel(inputPanel, "Input Pos: ", 14.0f, JLabel.LEFT);
 		
-		textLat = new JTextField("Latitude", 8);
-		textLon = new JTextField("Longitude", 8);
-				
-		inputPanel.add(inputLabel);
-		inputPanel.add(textLat);
-		inputPanel.add(textLon);
+		textLat = addTextField(inputPanel, "Latitude", 8);
+		textLon = addTextField(inputPanel, "textLon", 8);
 		
-		// panel4 - comp2 - remind label
-		JLabel remindLabel = new JLabel("* Input Format: 23.5 (23°5′N), -67.86 (67°86′W)");
-		remindLabel.setHorizontalAlignment(JLabel.CENTER);
+		operatePanel.add(inputPanel);
 		
-		// panel4 - comp3 - button2Panel - add & delete & reset
-		JPanel button2Panel = new JPanel();
-		button2Panel.setLayout(new GridLayout(1, 3));
+		// part_4_2: remindLabel
+		addLabel(operatePanel, "[e.g., 23=23°N, -23=23°S, 67=67°E, -67=67°W]", 12.0f, JLabel.CENTER);
 		
-		addButton = new JButton("Add");
-		deleteButton = new JButton("Delete");
-		resetButton = new JButton("Reset");
+		// part_4_3: operateButtonsPanel - operateButtons (add, delete & reset)
+		JPanel operateButtonsPanel = new JPanel();
+		operateButtonsPanel.setLayout(new GridLayout(1, 3));
 		
-		addButton.addActionListener(lb);
-		deleteButton.addActionListener(lb);
-		resetButton.addActionListener(lb);
+		addButton = addButton(operateButtonsPanel, "Add", alForButtons);
+		deleteButton = addButton(operateButtonsPanel, "Delete", alForButtons);
+		resetButton = addButton(operateButtonsPanel, "Reset", alForButtons);
 		
-		button2Panel.add(addButton);
-		button2Panel.add(deleteButton);
-		button2Panel.add(resetButton);
+		operatePanel.add(operateButtonsPanel);
 		
-		// panel4 - add
-		panel4.add(inputPanel);
-		panel4.add(remindLabel);
-		panel4.add(button2Panel);
-		
-		addComp(thePanel, panel4, 0, 3, 1, 1, this.getWidth(), this.getHeight() / 8);
+		addComp(operatePanel, 0, 3, 1, 1, this.getWidth(), this.getHeight() / 8);
 		
 		// add thePanel				
-		this.add(thePanel);
+		this.add(mainPanel);
 		
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		setVisible(true);
 	}
+
+	private JButton addButton(JPanel panel, String text, ActionListener al) {
+		JButton button = new JButton(text);
+		button.addActionListener(al);
+		panel.add(button);
+		
+		return button;
+	}
 	
-	private class ListenForButton implements ActionListener {
+	private void addLabel(JPanel panel, String text, float fontSize, int horizontalAlignment) {
+		JLabel label = new JLabel(text);
+		label.setFont(label.getFont().deriveFont(fontSize));
+		label.setHorizontalAlignment(horizontalAlignment);
+		
+		panel.add(label);
+	}
+	
+	private JLabel addLabel(JPanel panel, String text) {
+		JLabel label = new JLabel(text);
+		panel.add(label);
+		
+		return label;
+	}
+	
+	private JTextField addTextField(JPanel panel, String text, int columns) {
+		JTextField tf = new JTextField(text, columns);
+		panel.add(tf);
+		
+		return tf;
+	}
+	
+	private void addComp(JComponent comp, int gx, int gy, int gw, int gh, int ipadX, int ipadY) {
+		GridBagConstraints gridConstraints = new GridBagConstraints();
+		
+		gridConstraints.gridx = gx;
+		gridConstraints.gridy = gy;
+		
+		gridConstraints.gridwidth = gw;
+		gridConstraints.gridheight = gh;
+		
+		gridConstraints.ipadx = ipadX;
+		gridConstraints.ipady = ipadY;
+		
+		gridConstraints.weightx = 100;
+		gridConstraints.weighty = 100;
+		
+		gridConstraints.fill = GridBagConstraints.VERTICAL;
+		gridConstraints.anchor = GridBagConstraints.CENTER;
+		gridConstraints.insets = new Insets(10, 15, 10, 15);
+		
+		mainPanel.add(comp, gridConstraints); 
+	}
+	
+	public int[] calculateSize() {
+		int[] size = new int[2];
+		
+		BufferedImage img = null;
+		try {
+		    img = ImageIO.read(new File("Mercator_projection_SW.jpg")); 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		Dimension dm = tk.getScreenSize();
+		
+		double ratio = Math.min(1.0f * dm.getHeight() / img.getHeight(), 0.8f * dm.getWidth() / img.getWidth());
+		
+		size[0] = (int) (dm.getWidth() - img.getWidth() * ratio);
+		size[1] = (int) (img.getHeight() * ratio) + 1;
+				
+		return size;
+	}
+	
+	private class ListenForButtons implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == startButton) {
@@ -153,7 +200,6 @@ public class MainWin extends JFrame {
 					
 					jtable.requestFocus();
 					updateButton.doClick();
-					
 					textLat.setText("Latitude");
 					textLon.setText("Longitude");
 					
@@ -170,7 +216,15 @@ public class MainWin extends JFrame {
 			}
 			
 			if (e.getSource() == saveButton) {
-				//
+				String fileName = table.saveToFile(++printTimes);
+				
+				if (fileName == null) {
+					JOptionPane.showMessageDialog(MainWin.this, "Opps...Something wrong!", "Error", JOptionPane.ERROR_MESSAGE);
+					
+				} else {
+					JOptionPane.showMessageDialog(MainWin.this, "Success!\nPlease check \"" + fileName + "\"!", "Success", JOptionPane.INFORMATION_MESSAGE);
+				}
+				
 			}
 			
 			if (e.getSource() == updateButton) {
@@ -179,7 +233,23 @@ public class MainWin extends JFrame {
 			}
 			
 			if (e.getSource() == addButton) {
-				table.add(new Point(textLat.getText(), textLon.getText()));
+				try {
+					Integer.parseInt(textLat.getText());
+					
+					try {
+						Integer.parseInt(textLon.getText());
+						table.add(new Point(textLat.getText(), textLon.getText()));
+						
+					} catch(NumberFormatException exp) {
+						JOptionPane.showMessageDialog(MainWin.this, "Opps...Lon Input Wrong!\nPlease try an INTEGER!", "Input Wrong", JOptionPane.WARNING_MESSAGE);
+						textLon.requestFocus();
+					}
+					
+				} catch(NumberFormatException exp) {
+					JOptionPane.showMessageDialog(MainWin.this, "Opps...Lat Input Wrong!\nPlease try an INTEGER!", "Input Wrong", JOptionPane.WARNING_MESSAGE);
+					textLat.requestFocus();
+				}
+				
 			}
 			
 			if (e.getSource() == deleteButton) {
@@ -195,48 +265,6 @@ public class MainWin extends JFrame {
 				textLon.setText("Longitude");
 			}
 		}
-	}
-	
-	private void addComp(JPanel thePanel, JComponent comp, int gx, int gy, int gw, int gh, int ipadX, int ipadY) {
-		GridBagConstraints gridConstraints = new GridBagConstraints();
-		
-		gridConstraints.gridx = gx;
-		gridConstraints.gridy = gy;
-		
-		gridConstraints.gridwidth = gw;
-		gridConstraints.gridheight = gh;
-		
-		gridConstraints.weightx = 100;
-		gridConstraints.weighty = 100;
-		
-		gridConstraints.ipadx = ipadX;
-		gridConstraints.ipady = ipadY;
-		
-		gridConstraints.fill = GridBagConstraints.VERTICAL;
-		gridConstraints.anchor = GridBagConstraints.CENTER;
-		gridConstraints.insets = new Insets(10, 15, 10, 15);
-		
-		thePanel.add(comp, gridConstraints); 
-	}
-	
-	public int[] calculateSize() {
-		int[] size = new int[2];
-		
-		BufferedImage img = null;
-		try {
-		    img = ImageIO.read(new File("Mercator_projection_SW.jpg"));
-		} catch (IOException e) {
-		}
-		
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		Dimension dm = tk.getScreenSize();
-		
-		double ratio = Math.min(1.0f * dm.getHeight() / img.getHeight(), 0.8f * dm.getWidth() / img.getWidth());
-		
-		size[0] = (int) (dm.getWidth() - img.getWidth() * ratio);
-		size[1] = (int) (img.getHeight() * ratio) + 1;
-				
-		return size;
 	}
 
 }

@@ -1,5 +1,6 @@
 public class Point {
 	final static double R = 6371.009f; // km
+	final static int pointR = 10;
 	
 	double mapW = CourseWin.mapW;
 	double mapH = CourseWin.mapH;
@@ -21,8 +22,8 @@ public class Point {
 	}
 	
 	Point(String dLatStr, String dLonStr) {
-		lat = getRadValue(Double.parseDouble(dLatStr));
-		lon = getRadValue(Double.parseDouble(dLonStr));
+		lat = getRadValue(Integer.parseInt(dLatStr));
+		lon = getRadValue(Integer.parseInt(dLonStr));
 		
 		x = getXY()[0];
 		y = getXY()[1];
@@ -62,15 +63,15 @@ public class Point {
 		lon = getLatLon()[1];
 	}	
 	
-	public void updateLat(String dLatStr) {
-		this.lat = getRadValue(Double.parseDouble(dLatStr));
+	public void updateLat(int dLat) {
+		this.lat = getRadValue(dLat);
 		
 		x = getXY()[0];
 		y = getXY()[1];
 	}
 	
-	public void updateLon(String dLonStr) {
-		this.lon = getRadValue(Double.parseDouble(dLonStr));
+	public void updateLon(int dLon) {
+		this.lon = getRadValue(dLon);
 		
 		x = getXY()[0];
 		y = getXY()[1];
@@ -95,7 +96,7 @@ public class Point {
 	public boolean isSamePoint(int mx, int my) {
 		double distanceToCenter = Math.sqrt(Math.pow((mx - x), 2) + Math.pow((my - y), 2));
 		
-		if (distanceToCenter <= 10) {
+		if (distanceToCenter <= pointR) {
 			return true;
 		}
 		
@@ -103,85 +104,31 @@ public class Point {
 	}
 	
 	public String getLatString() {
-		int dl = (int) getDegreeValue(lat);
+		int dlat = (int) getDegreeValue(lat);
 		
-		String latStr = "" + Math.abs(dl) + "°";
+		String latStr = "" + Math.abs(dlat) + "°";
 		
-		if (dl > 0) {
+		if (dlat > 0) {
 			latStr += "N";
-		} else if (dl < 0) {
+		} else if (dlat < 0) {
 			latStr += "S";
 		}
 		
 		return latStr;
 	}
 	
-	public String getLatString(int flag) {
-		if (flag == 2) {
-			double dl = Math.abs(getDegreeValue(lat));
-			
-			String latStr = "";
-			
-			int latInt = (int) (dl * 100 / 100);
-			int latDec = (int) (dl * 100 % 100);
-			
-			latStr += latInt + "°";
-			latStr += latDec + "′";
-			
-			if (latInt != 0 && latDec != 0) {
-				if (lat > 0) {
-					latStr += "N";
-				} else if (lat < 0) {
-					latStr += "S";
-				}
-			}
-			
-			return latStr;	
-			
-		} else {
-			return "error";
-		}
-	}
-	
 	public String getLonString() {
-		int l = (int) getDegreeValue(lon);
+		int dlon = (int) getDegreeValue(lon);
 		
-		String lonStr = "" + Math.abs(l) + "°";
+		String lonStr = "" + Math.abs(dlon) + "°";
 		
-		if (l > 0) {
+		if (dlon > 0) {
 			lonStr += "E";
-		} else if (l < 0) {
+		} else if (dlon < 0) {
 			lonStr += "W";
 		}
 		
 		return lonStr;
-	}
-	
-	public String getLonString(int flag) {
-		if (flag == 2) {
-			double dl = Math.abs(getDegreeValue(lon));
-			
-			String lonStr = "";
-			
-			int lonInt = (int) (dl * 100 / 100);
-			int lonDec = (int) (dl * 100 % 100);
-			
-			lonStr += lonInt + "°";
-			lonStr += lonDec + "′";
-			
-			if (lonInt != 0 && lonDec != 0) {
-				if (lon > 0) {
-					lonStr += "E";
-				} else if (lon < 0) {
-					lonStr += "W";
-				}
-			}
-			
-			return lonStr;
-			
-		} else {
-			return "error";
-		}
 	}
 
 }
