@@ -1,34 +1,48 @@
+import java.util.*;
+
 import java.io.*;
-import javax.imageio.ImageIO;
+import java.net.URL;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 import javax.swing.*;
+import javax.imageio.ImageIO;
 
 import processing.core.PApplet;
 
 public class MainWin extends JFrame {	
-	LatLonTable table;
+	public static LatLonTable table;
+	public static JTable jtable;
 	
-	JTable jtable;
+	public static JButton updateButton;
 	
-	JPanel mainPanel;
+	public static ResourceBundle texts;
 	
-	JButton startButton, quitButton, saveButton, updateButton, addButton, deleteButton, resetButton;
+	private Locale language;
 	
-	JLabel distLabel;
+	private JPanel mainPanel;
 	
-	JTextField textLat, textLon;
+	private JButton startButton, quitButton, saveButton, addButton, deleteButton, resetButton;
 	
-	private boolean isStart = false;
-	private int printTimes = 0;
+	private JLabel distLabel;
 	
-	public MainWin(LatLonTable table) {
-		super("Course Planner");
+	private JTextField textLat, textLon;
+	
+	private JMenuBar menuBar;
+			
+	private boolean isFirstTimeToStart = true;
+
+	public MainWin(Locale language, boolean isFirstTimeToStart) {
+		table = new LatLonTable();
+		texts = ResourceBundle.getBundle("TextsBundle", language);
 		
-		this.table = table;
+		this.language = language;
+		this.isFirstTimeToStart = isFirstTimeToStart;
+		
+		this.setTitle(texts.getString("titleMain"));
+		setIconImage(new ImageIcon("icons/Navigation.png").getImage());
 		
 		int[] size = calculateSize();
 		setSize(size[0], size[1]);
@@ -36,6 +50,23 @@ public class MainWin extends JFrame {
 		setLocation(0, 0);
 		setResizable(true);
 		
+		// create main panel
+		createMainPanel();
+		
+		// create menus
+		createMenus();
+		
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		setVisible(true);
+	}
+	
+	public static void updateMainWin() {
+		jtable.updateUI();
+		updateButton.doClick();
+	}
+	
+	private void createMainPanel() {
 		// mainPanel
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new GridBagLayout());
@@ -48,15 +79,20 @@ public class MainWin extends JFrame {
 		controlPanel.setLayout(new GridLayout(2, 1));
 		
 		// part_1_1: welcomeLabel
-		addLabel(controlPanel, "Welcome! Let's Navigation!", 21.0f, JLabel.CENTER);
+		addLabel(controlPanel, texts.getString("lWelcome"), 21.0f, JLabel.CENTER);
 		
 		// part_1_2: controlButtonsPanel - controlButtons (start, quit & save)
 		JPanel controlButtonsPanel = new JPanel();
 		controlButtonsPanel.setLayout(new GridLayout(1, 3));
-			
-		startButton = addButton(controlButtonsPanel, "Start", alForButtons);
-		quitButton = addButton(controlButtonsPanel, "Quit", alForButtons);
-		saveButton = addButton(controlButtonsPanel, "Save", alForButtons);
+		
+		String startButtonText = texts.getString("bStart");
+		if (!isFirstTimeToStart) {
+			startButtonText = texts.getString("bRestart");
+		}
+		
+		startButton = addButton(controlButtonsPanel, startButtonText, alForButtons);
+		quitButton = addButton(controlButtonsPanel, texts.getString("bQuit"), alForButtons);
+		saveButton = addButton(controlButtonsPanel, texts.getString("bSave"), alForButtons);
 		
 		controlPanel.add(controlButtonsPanel);
 		
@@ -64,22 +100,21 @@ public class MainWin extends JFrame {
 				
 		// part_2: tablePanel
 		jtable = new JTable(table);
-		jtable.setToolTipText("Click and revise values here!");
+		jtable.setToolTipText(texts.getString("tipTable"));
 		
         JScrollPane tablePanel = new JScrollPane(jtable);
-        
-        table.parentPanel = tablePanel;
+        table.setParentPanle(tablePanel);
         
 		addComp(tablePanel, 0, 1, 1, 1, this.getWidth(), this.getHeight() / 3 * 2);
 
 		// part_3: distPanel
 		JPanel distPanel = new JPanel();
-		distPanel.setToolTipText("Click \"Update\" button to update!");
+		distPanel.setToolTipText(texts.getString("tipUpdate"));
 		
-		distLabel = addLabel(distPanel, "Distance Sum: " + table.getDistanceSum() + " (km)");
-		updateButton = addButton(distPanel, "Update", alForButtons);
+		distLabel = addLabel(distPanel, texts.getString("lDistSum") + table.getDistanceSum() + " (km)");
+		updateButton = addButton(distPanel, texts.getString("bUpdate"), alForButtons);
 		
-		addComp(distPanel, 0, 2, 1, 1, this.getWidth(), this.getHeight() / 9);
+		addComp(distPanel, 0, 2, 1, 1, this.getWidth(), this.getHeight() / 8);
 	
 		// part_4: operatePanel
 		JPanel operatePanel = new JPanel();
@@ -88,34 +123,29 @@ public class MainWin extends JFrame {
 		// part_4_1: inputPanel
 		JPanel inputPanel = new JPanel();
 		
-		addLabel(inputPanel, "Input Pos: ", 14.0f, JLabel.LEFT);
+		addLabel(inputPanel, texts.getString("lInput"), 14.0f, JLabel.LEFT);
 		
-		textLat = addTextField(inputPanel, "Latitude", 8);
-		textLon = addTextField(inputPanel, "textLon", 8);
+		textLat = addTextField(inputPanel, texts.getString("tLan"), 8);
+		textLon = addTextField(inputPanel, texts.getString("tLon"), 8);
 		
 		operatePanel.add(inputPanel);
 		
 		// part_4_2: remindLabel
-		addLabel(operatePanel, "[e.g., 23=23°N, -23=23°S, 67=67°E, -67=67°W]", 12.0f, JLabel.CENTER);
+		addLabel(operatePanel, "[" + texts.getString("eg") + "23=23°N, -23=23°S, 67=67°E, -67=67°W]", 12.0f, JLabel.CENTER);
 		
 		// part_4_3: operateButtonsPanel - operateButtons (add, delete & reset)
 		JPanel operateButtonsPanel = new JPanel();
 		operateButtonsPanel.setLayout(new GridLayout(1, 3));
 		
-		addButton = addButton(operateButtonsPanel, "Add", alForButtons);
-		deleteButton = addButton(operateButtonsPanel, "Delete", alForButtons);
-		resetButton = addButton(operateButtonsPanel, "Reset", alForButtons);
+		addButton = addButton(operateButtonsPanel, texts.getString("bAdd"), alForButtons);
+		deleteButton = addButton(operateButtonsPanel, texts.getString("bDelete"), alForButtons);
+		resetButton = addButton(operateButtonsPanel, texts.getString("bReset"), alForButtons);
 		
 		operatePanel.add(operateButtonsPanel);
 		
 		addComp(operatePanel, 0, 3, 1, 1, this.getWidth(), this.getHeight() / 8);
 		
-		// add thePanel				
-		this.add(mainPanel);
-		
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		setVisible(true);
+		this.add(mainPanel);		
 	}
 
 	private JButton addButton(JPanel panel, String text, ActionListener al) {
@@ -170,7 +200,64 @@ public class MainWin extends JFrame {
 		mainPanel.add(comp, gridConstraints); 
 	}
 	
-	public int[] calculateSize() {
+	private void createMenus() {
+		menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+        
+        // main menus
+        String[] mainMenuKeys = {"mNaviApp", "mFile", "mTools", "mHelp"};
+        
+        // menu items
+        String[][] menuItemKeys = {{"mIntroduction", "mAboutUS", "mRestart", "mQuit"}, {"mSave", "mOpen", "mRefresh"}, {"mSpeedTime"}, {"mUserGuide", "mContactUs"}};
+        
+        ListenForMenuItems alForMenuItems = new ListenForMenuItems();
+        
+        for (int i = 0; i < mainMenuKeys.length; i++) {
+        	menuBar.add(new JMenu(texts.getString(mainMenuKeys[i])));
+        	addMenuItems(menuBar.getMenu(i), menuItemKeys[i], alForMenuItems);
+        }
+        
+        // add language sub-menu
+        addLanguageSubMenu(menuBar.getMenu(2), 0, alForMenuItems);        
+        
+        menuBar.setVisible(true);
+	}
+	
+	private void addMenuItems(JMenu menu, String[] itemKeys, ListenForMenuItems alForMenuItems) {
+		for (String itemKey : itemKeys) {
+			String iconName = "icons/" + itemKey + ".png";
+			
+			JMenuItem item = new JMenuItem("  " + texts.getString(itemKey), new ImageIcon(iconName));
+			item.addActionListener(alForMenuItems);
+			
+			menu.add(item);
+			menu.addSeparator();
+		}
+		
+		menu.remove(menu.getItemCount() - 1);
+	}
+	
+	private void addLanguageSubMenu(JMenu parent, int pos, ListenForMenuItems alForMenuItems) {
+		String[] languageKeys = {"mLanEnglish", "mLanChinese"};
+		
+		JMenu languageMenu = new JMenu("  " + texts.getString("mLanguages"));
+        languageMenu.setIcon(new ImageIcon("icons/mLanguages.png"));
+                
+        for (String lanKey : languageKeys) {
+        	JMenuItem item = new JMenuItem(texts.getString(lanKey));
+        	item.addActionListener(alForMenuItems);
+        	
+        	languageMenu.add(item);
+        	languageMenu.addSeparator();
+        }
+        
+        languageMenu.remove(languageMenu.getItemCount() - 1);
+        
+        parent.add(languageMenu, pos);
+        parent.insertSeparator(1);
+	}
+		
+	private int[] calculateSize() {
 		int[] size = new int[2];
 		
 		BufferedImage img = null;
@@ -191,23 +278,23 @@ public class MainWin extends JFrame {
 		return size;
 	}
 	
-	private class ListenForButtons implements ActionListener {
+	class ListenForButtons implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == startButton) {
-				if (isStart) {
-					table.points.clear();
-					
-					jtable.requestFocus();
-					updateButton.doClick();
-					textLat.setText("Latitude");
-					textLon.setText("Longitude");
-					
-				} else {
+				if (isFirstTimeToStart) {
 					PApplet.main("CourseWin");
 					
-					isStart = true;
-					startButton.setText("Restart");
+					isFirstTimeToStart = false;
+					startButton.setText(texts.getString("bRestart"));
+					
+				} else {
+					LatLonTable.points.clear();
+					
+					updateMainWin();
+					
+					textLat.setText(texts.getString("tLan"));
+					textLon.setText(texts.getString("tLon"));
 				}
 			}
 			
@@ -216,40 +303,41 @@ public class MainWin extends JFrame {
 			}
 			
 			if (e.getSource() == saveButton) {
-				String fileName = table.saveToFile(++printTimes);
+				FileDialog fd = new FileDialog(MainWin.this, texts.getString("fTitle"), FileDialog.SAVE);				
 				
-				if (fileName == null) {
-					JOptionPane.showMessageDialog(MainWin.this, "Opps...Something wrong!", "Error", JOptionPane.ERROR_MESSAGE);
+				fd.setFile(texts.getString("fName"));
+				fd.setVisible(true);
+				
+				if (fd.getFile() != null) {
+					String fileName = fd.getDirectory() + fd.getFile();
 					
-				} else {
-					JOptionPane.showMessageDialog(MainWin.this, "Success!\nPlease check \"" + fileName + "\"!", "Success", JOptionPane.INFORMATION_MESSAGE);
+			        if (table.writeToFile(fileName)) {
+			        	JOptionPane.showMessageDialog(MainWin.this, texts.getString("fSuccessInfo") + fileName + "\"!", texts.getString("fSuccess"), JOptionPane.INFORMATION_MESSAGE);
+			        } else {
+			        	JOptionPane.showMessageDialog(MainWin.this, texts.getString("pErrorInfo"), texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
+			        }
 				}
 				
 			}
 			
 			if (e.getSource() == updateButton) {
-				table.updateDistance();
-				distLabel.setText("Distance Sum: " + table.getDistanceSum() + " (km)");
+				LatLonTable.updateDistance();
+				distLabel.setText(texts.getString("lDistSum") + table.getDistanceSum() + " (km)");
 			}
 			
 			if (e.getSource() == addButton) {
-				try {
-					Integer.parseInt(textLat.getText());
-					
-					try {
-						Integer.parseInt(textLon.getText());
-						table.add(new Point(textLat.getText(), textLon.getText()));
-						
-					} catch(NumberFormatException exp) {
-						JOptionPane.showMessageDialog(MainWin.this, "Opps...Lon Input Wrong!\nPlease try an INTEGER!", "Input Wrong", JOptionPane.WARNING_MESSAGE);
-						textLon.requestFocus();
-					}
-					
-				} catch(NumberFormatException exp) {
-					JOptionPane.showMessageDialog(MainWin.this, "Opps...Lat Input Wrong!\nPlease try an INTEGER!", "Input Wrong", JOptionPane.WARNING_MESSAGE);
+				double dlat = table.getInputData(textLat.getText(), 0);
+				double dlon = table.getInputData(textLon.getText(), 1);
+
+				if (dlat == 999) {
 					textLat.requestFocus();
+				} else if (dlon == 999) {
+					textLon.requestFocus();
+				} else {
+					table.add(new Point(dlat, dlon, "degree"));
 				}
 				
+				updateButton.doClick();
 			}
 			
 			if (e.getSource() == deleteButton) {
@@ -258,13 +346,114 @@ public class MainWin extends JFrame {
 				for (int i = rows.length - 1; i >= 0; i--) {
 					table.remove(rows[i]);
 				}
+				
+				updateButton.doClick();
 			}
 			
 			if (e.getSource() == resetButton) {
-				textLat.setText("Latitude");
-				textLon.setText("Longitude");
+				textLat.setText(texts.getString("tLan"));
+				textLon.setText(texts.getString("tLon"));
 			}
 		}
+	}
+	
+	class ListenForMenuItems implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// Menu "Navigation App"
+			// menuItem Introduction
+			if (e.getSource() == menuBar.getMenu(0).getItem(0)) {
+				try {
+				    Desktop.getDesktop().browse(new URL("http://www.google.com").toURI());
+				} catch (Exception exp) {
+					JOptionPane.showMessageDialog(MainWin.this, texts.getString("pErrorInfo"), texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			
+			// menuItem About Us
+			if (e.getSource() == menuBar.getMenu(0).getItem(2)) {
+				try {
+				    Desktop.getDesktop().browse(new URL("http://www.google.com").toURI());
+				} catch (Exception exp) {
+					JOptionPane.showMessageDialog(MainWin.this, texts.getString("pErrorInfo"), texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			
+			// menuItem Restart
+			if (e.getSource() == menuBar.getMenu(0).getItem(4)) {
+				startButton.doClick();
+			}
+						
+			// menuItem Quit
+			if (e.getSource() == menuBar.getMenu(0).getItem(6)) {
+				quitButton.doClick();
+			}
+			
+			// Menu "File"
+			// menuItem Save
+			if (e.getSource() == menuBar.getMenu(1).getItem(0)) {
+				saveButton.doClick();
+			}
+			
+			// menuItem Open
+			if (e.getSource() == menuBar.getMenu(1).getItem(2)) {
+				// more
+				table.readFromFile("/Users/gexinyu/Desktop/LatLonInfo.txt");
+				updateMainWin();
+			}
+			
+			// menuItem Refresh
+			if (e.getSource() == menuBar.getMenu(1).getItem(4)) {
+				updateMainWin();
+			}
+						
+			// Menu "Tools"
+			// sub-menu Languages - English
+			if (e.getSource() == ((JMenu) menuBar.getMenu(2).getItem(0)).getItem(0)) {
+				if (!language.toString().equals("en")) {
+					setVisible(false);
+					dispose();
+					
+					new MainWin(Locale.ENGLISH, isFirstTimeToStart);
+					updateMainWin();
+				}
+			}
+			
+			// sub-menu Languages - Chinese
+			if (e.getSource() == ((JMenu) menuBar.getMenu(2).getItem(0)).getItem(2)) {
+				if (!language.toString().equals("zh")) {
+					setVisible(false);
+					dispose();
+
+					new MainWin(Locale.CHINESE, isFirstTimeToStart);
+					updateMainWin();
+				}
+			}
+			
+			// menuItem Speed & Time
+			if (e.getSource() == menuBar.getMenu(2).getItem(2)) {
+				// more
+			}
+			
+			// Menu "Help"
+			// menuItem User Guide
+			if (e.getSource() == menuBar.getMenu(3).getItem(0)) {
+				try {
+				    Desktop.getDesktop().browse(new URL("http://www.google.com").toURI());
+				} catch (Exception exp) {
+					JOptionPane.showMessageDialog(MainWin.this, texts.getString("pErrorInfo"), texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			
+			// menuItem Contact Us
+			if (e.getSource() == menuBar.getMenu(3).getItem(2)) {
+				try {
+				    Desktop.getDesktop().browse(new URL("http://www.google.com").toURI());
+				} catch (Exception exp) {
+					JOptionPane.showMessageDialog(MainWin.this, texts.getString("pErrorInfo"), texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		}	
 	}
 
 }

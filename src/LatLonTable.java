@@ -1,26 +1,17 @@
 import java.util.*;
 import java.io.*;
 
-import java.text.DecimalFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
 import javax.swing.*;
 import javax.swing.table.*;
 
 public class LatLonTable extends AbstractTableModel{
-    JComponent parentPanel = null;
-    
     private static String columnNames[] = {"Lat", "Lon"};
-    
-    public ArrayList<Point> points = new ArrayList<Point>();
-    
-    public double distanceSum;
-    
-    public LatLonTable() {
         
-    }
-
+    public static ArrayList<Point> points = new ArrayList<Point>();
+    public static double distanceSum;
+    
+    private JComponent parentPanel = null;
+    
     public String getColumnName(int col) {
         return columnNames[col];
     }
@@ -37,46 +28,93 @@ public class LatLonTable extends AbstractTableModel{
         return true; 
     }
     
-    public Object getValueAt(int row, int col) {
-        if (col == 0) {
-            return points.get(row).getLatString();
-        } else {
-            return points.get(row).getLonString();
-        }
-    }
-    
-    public void setValueAt(Object value, int row, int col) {
-        try {
-            int valInt = Integer.parseInt((String) value);
-            
-            Point p = points.get(row);
-            
-            if (col == 0) {
-                p.updateLat(valInt);
-            } else {
-                p.updateLon(valInt);
-            }
-            
-            fireTableCellUpdated(row, col);
-            
-        } catch(NumberFormatException e) {
-            JOptionPane.showMessageDialog(parentPanel, "Opps...\nPlease input an INTEGER!", "Retry", JOptionPane.WARNING_MESSAGE);
-        }
-        
-                
+    public void setParentPanle(JComponent parentPanel) {
+        this.parentPanel = parentPanel;
     }
     
     public void add(Point p) {
         points.add(p);
-        fireTableRowsInserted(points.size() - 1, points.size() - 1);        
+        fireTableRowsInserted(points.size() - 1, points.size() - 1);
     }
     
     public void remove(int index) {
         points.remove(index);
-        fireTableRowsDeleted(index, index);     
+        fireTableRowsDeleted(index, index);
+    }
+    
+    public Object getValueAt(int row, int col) {
+        if (col == 0) {
+            return points.get(row).getLatString("table");
+        } else {
+            return points.get(row).getLonString("table");
+        }
+    }
+    
+    public void setValueAt(Object value, int row, int col) {
+        double origin = getInputData((String) getValueAt(row, col), col);
+        
+        double data = getInputData((String) value, col);
+        if (data == 999) {
+            data = origin;
+        }
+        
+        Point p = points.get(row);
+        
+        if (col == 0) {
+            p.updateLat(data);
+            
+        } else {
+            p.updateLon(data);
+        }
+        
+        fireTableCellUpdated(row, col);
+        
+        updateDistance();
+        MainWin.updateMainWin();
+    }
+    
+    public double getInputData(String s, int col) {
+        // two legal formats: 23.123456°N / -23.123456
+        try {
+            double data = 0.0;
+            
+            String posSign;
+            String negSign;
+            
+            if (col == 0) {
+                posSign = "°N";
+                negSign = "°S";
+                
+            } else {
+                posSign = "°E";
+                negSign = "°W";
+            }
+            
+            int indexOfPostfix = s.lastIndexOf(posSign);
+            int flag = 1;
+            
+            if (indexOfPostfix == -1) {
+                indexOfPostfix = s.lastIndexOf(negSign);
+                flag = -1;
+            }
+            
+            if (indexOfPostfix != -1) {
+                data = Double.parseDouble(s.substring(0, indexOfPostfix));
+                data *= flag;
+                
+            } else {
+                data = Double.parseDouble(s);
+            }
+            
+            return data;
+            
+        } catch(NumberFormatException e) {
+            JOptionPane.showMessageDialog(parentPanel, MainWin.texts.getString("pNumberInfo"), MainWin.texts.getString("pNumber"), JOptionPane.WARNING_MESSAGE);
+            return 999;
+        }
     }
         
-    public void updateDistance() {
+    public static void updateDistance() {
         distanceSum = 0.0;
         
         for (int i = 1; i < points.size(); i++) {
@@ -84,44 +122,70 @@ public class LatLonTable extends AbstractTableModel{
             Point curr = points.get(i);
             
             distanceSum += prev.getDist(curr);
-        }
+        }       
     }
     
     public String getDistanceSum() {
-        DecimalFormat df = new DecimalFormat("#.####");
-        return df.format(distanceSum);
+        return String.format("%.4f", distanceSum);
     }
     
-    public String saveToFile(int printTimes) {
-        try {
-            String fileName = "LatLonInfo_" + DateTimeFormatter.ofPattern("MMddyyyy").format(LocalDate.now()) + "_" + printTimes + ".txt";
-            
+    public boolean writeToFile(String fileName) {
+        try {           
             BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
             
-            // print file head
-            bw.write("The " + printTimes + "th Print:\n\n");            
-            bw.write("Positions:\tLat:\tLon:\t\n");
-            bw.write("------------------------------\n");
-            
-            // print table data
             for (int i = 0; i < points.size(); i++) {
-                bw.write("Position " + (i + 1) + ":\t" + points.get(i).getLatString() + "\t" + points.get(i).getLonString() + "\n");
+                bw.write(points.get(i).getLatString("write") + "\t" + points.get(i).getLonString("write") + "\n");
             }
             
-            // print file end
-            bw.write("------------------------------\n");           
-            bw.write(new Date() + "\n");
-                        
             bw.flush();
             bw.close();
             
-            return fileName;
+            return true;
             
         } catch(IOException e) {
             e.printStackTrace();
-            return null;
+            return false;
         }
+    }
     
+    public boolean readFromFile(String fileName) {
+        try {
+            ArrayList<Point> loadedPoints = new ArrayList<Point>();
+            
+            BufferedReader br = new BufferedReader(new FileReader(fileName));
+            
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                String[] latlon = line.trim().split("\\s+");
+                loadedPoints.add(new Point(Double.parseDouble(latlon[0]), Double.parseDouble(latlon[1]), "degree"));
+            }
+            
+            br.close();
+            
+            loadPointsToTable(loadedPoints);
+            
+            return true;
+            
+        } catch(FileNotFoundException e) {
+            JOptionPane.showMessageDialog(parentPanel, MainWin.texts.getString("pFile"), MainWin.texts.getString("pError"), JOptionPane.WARNING_MESSAGE);
+            return false;
+            
+        } catch(IOException e) {
+            JOptionPane.showMessageDialog(parentPanel, MainWin.texts.getString("pErrorInfo"), MainWin.texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
+            return false;
+            
+        } catch(NumberFormatException e) {
+            JOptionPane.showMessageDialog(parentPanel, MainWin.texts.getString("pRead"), MainWin.texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
+    
+    private void loadPointsToTable(ArrayList<Point> loadedPoints) {
+        points.clear();
+        
+        for (Point p : loadedPoints) {
+            points.add(p);
+        }
     }
     
 }

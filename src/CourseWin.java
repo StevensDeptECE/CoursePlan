@@ -1,25 +1,21 @@
 import processing.core.*; 
-import java.util.ArrayList;
+import java.util.*;
 
-public class CourseWin extends PApplet {
-  static LatLonTable table = new LatLonTable();
+public class CourseWin extends PApplet {  
+  public static float mapW;
+  public static float mapH;
   
-  static float mapW;
-  static float mapH;
+  private PImage img;
+  private float ratio;
   
-  PImage img;
-  float ratio;
-
-  ArrayList<Point> waypoints = table.points;
-  
-  double distanceSum = 0;
+  private ArrayList<Point> waypoints = LatLonTable.points;
   
   // for drag point - start
-  boolean isOverPoint = false;
-  boolean isLockPoint = false;
+  private boolean isOverPoint = false;
+  private boolean isLockPoint = false;
   
-  Point choosedPoint = null;
-  double[] offsets = new double[2];
+  private Point choosedPoint = null;
+  private double[] offsets = new double[2];
   // for drag point - end
   
   public void setup() {
@@ -31,17 +27,16 @@ public class CourseWin extends PApplet {
     int winH = (int) mapH + 1;
         
     surface.setSize(winW, winH);
-    surface.setLocation(screenWidth - winW, 0);
-        
+    surface.setLocation(screenWidth - winW, 0); 
   }
   
   public void addImage() {
     img = loadImage("Mercator_projection_SW.jpg");
     
     ratio = (float) Math.min(1.0f * displayHeight / img.height, 0.8f * displayWidth / img.width);
+    
     mapW = img.width * ratio;
     mapH = img.height * ratio;
-    
   }
     
   public void draw() {
@@ -55,7 +50,7 @@ public class CourseWin extends PApplet {
     for (int i = 0; i < waypoints.size(); i++) {
       Point curr = waypoints.get(i);
     
-      if (curr.isSamePoint(mouseX, mouseY)) { // is over a point
+      if (curr.isSamePoint(mouseX, mouseY)) { // isOver a point
         isOverPoint = true;
         choosedPoint = curr;
         fill(150);
@@ -66,8 +61,8 @@ public class CourseWin extends PApplet {
         ellipse((float) curr.x, (float) curr.y, 10, 10);
         
         fill(255);
-        text(curr.getLatString(), (float) curr.x - 40, (float) curr.y - 5);
-        text(curr.getLonString(), (float) curr.x - 40, (float) curr.y + 10);
+        text(curr.getLatString("map"), (float) curr.x - 40, (float) curr.y - 5);
+        text(curr.getLonString("map"), (float) curr.x - 40, (float) curr.y + 10);
         
         if (i > 0) {
           Point prev = waypoints.get(i - 1);
@@ -76,7 +71,7 @@ public class CourseWin extends PApplet {
     }
     
     fill(0);
-    text("Distance Sum: " + nfc((float) distanceSum, 3), 20, height - 80);
+    text("Distance Sum: " + nfc((float) LatLonTable.distanceSum, 2), 20, height - 80);
     text("Unit: km", 20, height - 60);
   }
   
@@ -110,18 +105,6 @@ public class CourseWin extends PApplet {
     }
   }
   
-  void updateDist() {
-    distanceSum = 0.0;
-    for (int i = 0; i < waypoints.size(); i++) {
-      Point curr = waypoints.get(i);
-      
-      if (i > 0) {
-        Point prev = waypoints.get(i - 1);
-        distanceSum += prev.getDist(curr);
-      }
-    }
-  }
-  
   public void mouseClicked() {
     boolean isExist = false;
     
@@ -129,7 +112,7 @@ public class CourseWin extends PApplet {
       Point curr = waypoints.get(i);
       
       if (curr.isSamePoint(mouseX, mouseY)) {
-        table.remove(i);
+        MainWin.table.remove(i);
         isExist = true;
         
         break;
@@ -139,13 +122,12 @@ public class CourseWin extends PApplet {
     if (!isExist) {
       if (mouseX >= 0 && mouseX <= mapW && mouseY >= 0 && mouseY <= mapH) {
         Point newPoint = new Point(mouseX, mouseY);       
-        table.add(newPoint);
+        MainWin.table.add(newPoint);
       }
     }
     
-    // update distance
-    updateDist();
-    
+    LatLonTable.updateDistance();
+    MainWin.updateMainWin();
   }
   
   public void mousePressed() {
@@ -166,9 +148,6 @@ public class CourseWin extends PApplet {
     if (isLockPoint) {
       cursor(HAND);
       choosedPoint.updateXY(mouseX - offsets[0], mouseY - offsets[1]);
-      
-      // update distance
-      updateDist();
     }
   }
   
@@ -176,14 +155,14 @@ public class CourseWin extends PApplet {
     isLockPoint = false;
     cursor(ARROW);
     
-    // update distance
-    updateDist();
+    LatLonTable.updateDistance();
+    MainWin.updateMainWin();
   }
 
   public void settings() { size(displayWidth, displayHeight); }
 
   static public void main(String[] passedArgs) {
-    new MainWin(CourseWin.table);
+    new MainWin(Locale.ENGLISH, true);
   }
 
 }

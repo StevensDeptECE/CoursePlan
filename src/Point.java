@@ -1,16 +1,16 @@
 public class Point {
-	final static double R = 6371.009f; // km
-	final static int pointR = 10;
+	private final double R = 6371.009f; // km
+	private final int pointR = 10;
 	
-	double mapW = CourseWin.mapW;
-	double mapH = CourseWin.mapH;
-	double mapR = mapW / (2 * Math.PI);
+	private double mapW = CourseWin.mapW;
+	private double mapH = CourseWin.mapH;
+	private double mapR = mapW / (2 * Math.PI);
 	
-	double x;
-	double y;
+	public double x;
+	public double y;
 	
-	double lat;
-	double lon;
+	public double lat;
+	public double lon;
   
 	Point(double x, double y) {
 		this.x = x;
@@ -18,15 +18,16 @@ public class Point {
 		
 		lat = getLatLon()[0];
 		lon = getLatLon()[1];
-		
 	}
 	
-	Point(String dLatStr, String dLonStr) {
-		lat = getRadValue(Integer.parseInt(dLatStr));
-		lon = getRadValue(Integer.parseInt(dLonStr));
-		
-		x = getXY()[0];
-		y = getXY()[1];
+	Point(double dlat, double dlon, String flag) {
+		if (flag.equals("degree")) {
+			lat = getRadValue(dlat);
+			lon = getRadValue(dlon);
+			
+			x = getXY()[0];
+			y = getXY()[1];
+		}
 	}
 	
 	// Mercator projection - Gudermannian function	
@@ -63,14 +64,14 @@ public class Point {
 		lon = getLatLon()[1];
 	}	
 	
-	public void updateLat(int dLat) {
+	public void updateLat(double dLat) {
 		this.lat = getRadValue(dLat);
 		
 		x = getXY()[0];
 		y = getXY()[1];
 	}
 	
-	public void updateLon(int dLon) {
+	public void updateLon(double dLon) {
 		this.lon = getRadValue(dLon);
 		
 		x = getXY()[0];
@@ -103,29 +104,63 @@ public class Point {
 		return false;
 	}
 	
-	public String getLatString() {
-		int dlat = (int) getDegreeValue(lat);
+	public String getLatString(String flag) {
+		double dlat = getDegreeValue(lat);
 		
-		String latStr = "" + Math.abs(dlat) + "°";
+		String latStr = "";
 		
-		if (dlat > 0) {
-			latStr += "N";
-		} else if (dlat < 0) {
-			latStr += "S";
+		boolean isPostfix = true;
+		
+		if (flag.equals("map")) {
+			latStr += Math.abs((int) dlat);
+			
+		} else if (flag.equals("table")) {
+			latStr += String.format("%.6f", Math.abs(dlat));
+			
+		} else if (flag.equals("write")) {
+			latStr += String.format("%.6f", dlat);
+			isPostfix = false;
+		}
+		
+		if (isPostfix) {
+			latStr += "°";
+			
+			if (dlat > 0) {
+				latStr += "N";
+			} else if (dlat < 0) {
+				latStr += "S";
+			}
 		}
 		
 		return latStr;
 	}
 	
-	public String getLonString() {
-		int dlon = (int) getDegreeValue(lon);
+	public String getLonString(String flag) {
+		double dlon = getDegreeValue(lon);
 		
-		String lonStr = "" + Math.abs(dlon) + "°";
+		String lonStr = "";
 		
-		if (dlon > 0) {
-			lonStr += "E";
-		} else if (dlon < 0) {
-			lonStr += "W";
+		boolean isPostfix = true;
+		
+		if (flag.equals("map")) {
+			lonStr += Math.abs((int) dlon);
+			
+		} else if (flag.equals("table")) {
+			lonStr += String.format("%.6f", Math.abs(dlon));
+			
+		} else if (flag.equals("write")) {
+			lonStr += String.format("%.6f", dlon);
+			isPostfix = false;
+		}
+		
+		if (isPostfix) {
+			lonStr += "°";
+			
+			if (dlon > 0) {
+				lonStr += "E";
+			} else if (dlon < 0) {
+				lonStr += "W";
+			}
 		}
 		
 		return lonStr;
