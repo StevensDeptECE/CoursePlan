@@ -303,7 +303,7 @@ public class MainWin extends JFrame {
 			}
 			
 			if (e.getSource() == saveButton) {
-				FileDialog fd = new FileDialog(MainWin.this, texts.getString("fTitle"), FileDialog.SAVE);				
+				FileDialog fd = new FileDialog(MainWin.this, texts.getString("fSaveTitle"), FileDialog.SAVE);				
 				
 				fd.setFile(texts.getString("fName"));
 				fd.setVisible(true);
@@ -397,8 +397,21 @@ public class MainWin extends JFrame {
 			
 			// menuItem Open
 			if (e.getSource() == menuBar.getMenu(1).getItem(2)) {
-				// more
-				table.readFromFile("/Users/gexinyu/Desktop/LatLonInfo.txt");
+				FileDialog fd = new FileDialog(MainWin.this, texts.getString("fOpenTitle"), FileDialog.LOAD);				
+				
+				fd.setFilenameFilter(new FilenameFilter() {
+				    @Override
+				    public boolean accept(File dir, String name) {
+				        return name.endsWith(".txt");
+				    }
+				});
+				
+				fd.setVisible(true);
+				
+				if (fd.getFile() != null) {
+					table.readFromFile(fd.getDirectory() + fd.getFile());    
+				}
+			      
 				updateMainWin();
 			}
 			

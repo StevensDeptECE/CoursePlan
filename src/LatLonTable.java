@@ -148,7 +148,7 @@ public class LatLonTable extends AbstractTableModel{
         }
     }
     
-    public boolean readFromFile(String fileName) {
+    public void readFromFile(String fileName) {
         try {
             ArrayList<Point> loadedPoints = new ArrayList<Point>();
             
@@ -164,19 +164,19 @@ public class LatLonTable extends AbstractTableModel{
             
             loadPointsToTable(loadedPoints);
             
-            return true;
+            return;
             
         } catch(FileNotFoundException e) {
             JOptionPane.showMessageDialog(parentPanel, MainWin.texts.getString("pFile"), MainWin.texts.getString("pError"), JOptionPane.WARNING_MESSAGE);
-            return false;
+            return;
             
         } catch(IOException e) {
             JOptionPane.showMessageDialog(parentPanel, MainWin.texts.getString("pErrorInfo"), MainWin.texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
-            return false;
+            return;
             
         } catch(NumberFormatException e) {
             JOptionPane.showMessageDialog(parentPanel, MainWin.texts.getString("pRead"), MainWin.texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
-            return false;
+            return;
         }
     }
     
