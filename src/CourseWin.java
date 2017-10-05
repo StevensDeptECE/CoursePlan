@@ -1,4 +1,6 @@
-import processing.core.*; 
+import processing.core.*;
+
+import java.awt.Image;
 import java.util.*;
 
 public class CourseWin extends PApplet {  
@@ -31,7 +33,7 @@ public class CourseWin extends PApplet {
   }
   
   public void addImage() {
-    img = loadImage("Mercator_projection_SW.jpg");
+    img = loadImage("images/Mercator_projection_SW.jpg");
     
     ratio = (float) Math.min(1.0f * displayHeight / img.height, 0.8f * displayWidth / img.width);
     

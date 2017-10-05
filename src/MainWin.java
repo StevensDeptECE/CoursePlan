@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import processing.core.PApplet;
 
 public class MainWin extends JFrame {	
+	
 	public static LatLonTable table;
 	public static JTable jtable;
 	
@@ -42,7 +43,7 @@ public class MainWin extends JFrame {
 		this.isFirstTimeToStart = isFirstTimeToStart;
 		
 		this.setTitle(texts.getString("titleMain"));
-		setIconImage(new ImageIcon("icons/Navigation.png").getImage());
+		setIconImage(new ImageIcon(getClass().getResource("/icons/Navigation.png")).getImage());
 		
 		int[] size = calculateSize();
 		setSize(size[0], size[1]);
@@ -225,9 +226,9 @@ public class MainWin extends JFrame {
 	
 	private void addMenuItems(JMenu menu, String[] itemKeys, ListenForMenuItems alForMenuItems) {
 		for (String itemKey : itemKeys) {
-			String iconName = "icons/" + itemKey + ".png";
+			String iconName = "/icons/" + itemKey + ".png";
 			
-			JMenuItem item = new JMenuItem("  " + texts.getString(itemKey), new ImageIcon(iconName));
+			JMenuItem item = new JMenuItem("  " + texts.getString(itemKey), new ImageIcon(getClass().getResource(iconName)));
 			item.addActionListener(alForMenuItems);
 			
 			menu.add(item);
@@ -241,7 +242,7 @@ public class MainWin extends JFrame {
 		String[] languageKeys = {"mLanEnglish", "mLanChinese"};
 		
 		JMenu languageMenu = new JMenu("  " + texts.getString("mLanguages"));
-        languageMenu.setIcon(new ImageIcon("icons/mLanguages.png"));
+        languageMenu.setIcon(new ImageIcon(getClass().getResource("/icons/mLanguages.png")));
                 
         for (String lanKey : languageKeys) {
         	JMenuItem item = new JMenuItem(texts.getString(lanKey));
@@ -256,25 +257,25 @@ public class MainWin extends JFrame {
         parent.add(languageMenu, pos);
         parent.insertSeparator(1);
 	}
-		
+	
 	private int[] calculateSize() {
 		int[] size = new int[2];
 		
-		BufferedImage img = null;
 		try {
-		    img = ImageIO.read(new File("Mercator_projection_SW.jpg")); 
+			BufferedImage img = ImageIO.read(getClass().getResource("/images/Mercator_projection_SW.jpg"));
+			
+			Toolkit tk = Toolkit.getDefaultToolkit();
+			Dimension dm = tk.getScreenSize();
+			
+			double ratio = Math.min(1.0f * dm.getHeight() / img.getHeight(), 0.8f * dm.getWidth() / img.getWidth());
+			
+			size[0] = (int) (dm.getWidth() - img.getWidth() * ratio);
+			size[1] = (int) (img.getHeight() * ratio) + 1;
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		Dimension dm = tk.getScreenSize();
-		
-		double ratio = Math.min(1.0f * dm.getHeight() / img.getHeight(), 0.8f * dm.getWidth() / img.getWidth());
-		
-		size[0] = (int) (dm.getWidth() - img.getWidth() * ratio);
-		size[1] = (int) (img.getHeight() * ratio) + 1;
-				
+						
 		return size;
 	}
 	
@@ -364,7 +365,7 @@ public class MainWin extends JFrame {
 			// menuItem Introduction
 			if (e.getSource() == menuBar.getMenu(0).getItem(0)) {
 				try {
-				    Desktop.getDesktop().browse(new URL("http://www.google.com").toURI());
+				    Desktop.getDesktop().browse(new URL("https://sites.google.com/view/letsnavigateapp/introduction?authuser=0").toURI());
 				} catch (Exception exp) {
 					JOptionPane.showMessageDialog(MainWin.this, texts.getString("pErrorInfo"), texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
 				}
@@ -373,7 +374,7 @@ public class MainWin extends JFrame {
 			// menuItem About Us
 			if (e.getSource() == menuBar.getMenu(0).getItem(2)) {
 				try {
-				    Desktop.getDesktop().browse(new URL("http://www.google.com").toURI());
+				    Desktop.getDesktop().browse(new URL("https://sites.google.com/view/letsnavigateapp/about-us?authuser=0").toURI());
 				} catch (Exception exp) {
 					JOptionPane.showMessageDialog(MainWin.this, texts.getString("pErrorInfo"), texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
 				}
@@ -445,14 +446,24 @@ public class MainWin extends JFrame {
 			
 			// menuItem Speed & Time
 			if (e.getSource() == menuBar.getMenu(2).getItem(2)) {
-				// more
+				String inputSpeed = JOptionPane.showInputDialog(MainWin.this, texts.getString("pSpeedInputMes"), texts.getString("pSpeedUnit"));
+				
+				try {
+					double speed = Double.parseDouble(inputSpeed);
+					double time = (LatLonTable.distanceSum / 1.852) / speed;
+					
+					JOptionPane.showMessageDialog(MainWin.this, texts.getString("pTimeMes") + String.format("%.3f", time) + texts.getString("pTimeUnit"), texts.getString("pTime"), JOptionPane.INFORMATION_MESSAGE);
+					
+				} catch (NumberFormatException exp) {
+					JOptionPane.showMessageDialog(MainWin.this, texts.getString("pNumberInfo"), texts.getString("pNumber"), JOptionPane.WARNING_MESSAGE);
+				}
 			}
 			
 			// Menu "Help"
 			// menuItem User Guide
 			if (e.getSource() == menuBar.getMenu(3).getItem(0)) {
 				try {
-				    Desktop.getDesktop().browse(new URL("http://www.google.com").toURI());
+				    Desktop.getDesktop().browse(new URL("https://sites.google.com/view/letsnavigateapp/user-guide?authuser=0").toURI());
 				} catch (Exception exp) {
 					JOptionPane.showMessageDialog(MainWin.this, texts.getString("pErrorInfo"), texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
 				}
@@ -461,7 +472,7 @@ public class MainWin extends JFrame {
 			// menuItem Contact Us
 			if (e.getSource() == menuBar.getMenu(3).getItem(2)) {
 				try {
-				    Desktop.getDesktop().browse(new URL("http://www.google.com").toURI());
+				    Desktop.getDesktop().browse(new URL("https://sites.google.com/view/letsnavigateapp/home?authuser=0").toURI());
 				} catch (Exception exp) {
 					JOptionPane.showMessageDialog(MainWin.this, texts.getString("pErrorInfo"), texts.getString("pError"), JOptionPane.ERROR_MESSAGE);
 				}
