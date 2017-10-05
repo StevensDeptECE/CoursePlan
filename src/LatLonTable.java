@@ -134,7 +134,8 @@ public class LatLonTable extends AbstractTableModel{
             BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
             
             for (int i = 0; i < points.size(); i++) {
-                bw.write(points.get(i).getLatString("write") + "\t" + points.get(i).getLonString("write") + "\n");
+                bw.write(points.get(i).getLatString("write") + "\t" + points.get(i).getLonString("write"));
+                bw.newLine();
             }
             
             bw.flush();
