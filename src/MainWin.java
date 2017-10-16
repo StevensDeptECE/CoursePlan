@@ -13,7 +13,6 @@ import javax.imageio.ImageIO;
 import processing.core.PApplet;
 
 public class MainWin extends JFrame {	
-	
 	public static LatLonTable table;
 	public static JTable jtable;
 	
@@ -43,6 +42,7 @@ public class MainWin extends JFrame {
 		this.isFirstTimeToStart = isFirstTimeToStart;
 		
 		this.setTitle(texts.getString("titleMain"));
+		System.out.println(getClass().toString());
 		setIconImage(new ImageIcon(getClass().getResource("/icons/Navigation.png")).getImage());
 		
 		int[] size = calculateSize();
