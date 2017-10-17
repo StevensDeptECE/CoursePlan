@@ -10,6 +10,8 @@ public class TestLatLonNav {
 	}
 	public static void main(String[] args) {
 		System.out.println("point 1\t\t\tpoint 2\t\t\tDistance\tCourse");
+		distAndCourse(0, 0, 0, 1);
+		distAndCourse(1, 0, 1, -1);
 		distAndCourse(40, -74, 40, -70);
 		distAndCourse(40, -74, 45, -74);
 		distAndCourse(40, -74, 41, -73);
