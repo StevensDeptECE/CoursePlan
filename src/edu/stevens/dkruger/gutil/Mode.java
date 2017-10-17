@@ -1,5 +1,8 @@
 package edu.stevens.dkruger.gutil;
 
-public class Mode {
-
+public abstract class Mode {
+	private History hist;
+	public Mode(History h) { hist = h; }
+	public abstract void doIt();
+	public abstract void undo();
 }

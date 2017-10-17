@@ -44,7 +44,7 @@ public class LatLon {
 	//course heading to go great circle to point p2	
 	public double course(LatLon p2) {
 		double dLon = p2.lon - lon;
-		double tana = Math.sin(dLon) / Math.cos(lat)*Math.tan(p2.lat) - Math.sin(lat)*Math.cos(dLon);
+		double tana = Math.sin(dLon) / (Math.cos(lat)*Math.tan(p2.lat) - Math.sin(lat)*Math.cos(dLon));
 		return Math.atan(tana);
 	}
 }
